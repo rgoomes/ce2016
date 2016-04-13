@@ -48,14 +48,54 @@ class Representation:
 
 		self.score = value - problem.R * time
 
+	def nearest_neighbor(self, problem):
+		path = [random.randint(0, problem.num_cities - 1)]
+		city_inpath = [0 for _ in range(problem.num_cities)]
+		city_inpath[path[0]] = 1
+
+		for i in range(1, problem.num_cities):
+			dist = float("inf")
+
+			for j in range(problem.num_cities):
+				if not city_inpath[j] and problem.dists[path[i-1]][j] < dist:
+					dist = problem.dists[path[i-1]][j]
+					next_city = j
+
+			path.append(next_city)
+			city_inpath[next_city] = 1
+
+		return path
+
+	def greedy_knapsack(self, problem):
+		plan = [0 for _ in range(problem.total_items)]
+		feno = [[i, problem.items[i], self.get_ratio(i, problem)]
+			for i in range(problem.total_items)]
+
+		feno.sort(key=operator.itemgetter(2), reverse=True)
+
+		weight = it = 0
+		while(weight < problem.W and it < problem.total_items):
+			pos, item = feno[it][0], feno[it][1]
+			if weight + problem.item_weights[item] <= problem.W:
+				weight += problem.item_weights[item]
+				plan[pos] = 1
+
+			it += 1
+
+		return plan
+
+	def heuristic_indiv(self, problem):
+		self.ks  = self.greedy_knapsack(problem)
+		self.tsp = self.nearest_neighbor(problem)
+
 	def random_indiv(self, problem):
 		self.ks  = [random.randint(0,1) for _ in range(problem.total_items)]
 		self.tsp = random.sample(range(problem.num_cities), problem.num_cities)
+		self.repair(problem)
 
 	def __init__(self, problem):
 		if problem != None:
-			self.random_indiv(problem);
-			self.repair(problem)
+			self.heuristic_indiv(problem);
 
 class Problem:
 	def read_conf(self, conf):
