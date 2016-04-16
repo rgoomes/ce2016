@@ -49,38 +49,34 @@ class Representation:
 		self.score = value - problem.R * time
 
 	def nearest_neighbor(self, problem):
-		path = [random.randint(0, problem.num_cities - 1)]
-		city_inpath = [0 for _ in range(problem.num_cities)]
-		city_inpath[path[0]] = 1
+		tour = [random.randint(0, problem.num_cities - 1)]
+		in_tour = [0 for _ in range(problem.num_cities)]
+		in_tour[tour[0]] = 1
 
 		for i in range(1, problem.num_cities):
 			dist = float("inf")
 
 			for j in range(problem.num_cities):
-				if not city_inpath[j] and problem.dists[path[i-1]][j] < dist:
-					dist = problem.dists[path[i-1]][j]
+				if not in_tour[j] and problem.dists[tour[i-1]][j] < dist:
+					dist = problem.dists[tour[i-1]][j]
 					next_city = j
 
-			path.append(next_city)
-			city_inpath[next_city] = 1
+			tour.append(next_city)
+			in_tour[next_city] = 1
 
-		return path
+		return tour
 
 	def greedy_knapsack(self, problem):
 		plan = [0 for _ in range(problem.total_items)]
-		feno = [[i, problem.items[i], self.get_ratio(i, problem)]
-			for i in range(problem.total_items)]
+		feno = [[i, self.get_ratio(i, problem)] for i in range(problem.total_items)]
+		feno.sort(key=operator.itemgetter(1), reverse=True)
 
-		feno.sort(key=operator.itemgetter(2), reverse=True)
-
-		weight = it = 0
-		while(weight < problem.W and it < problem.total_items):
-			pos, item = feno[it][0], feno[it][1]
+		weight = 0
+		for it in range(0, problem.total_items):
+			pos, item = feno[it][0], problem.items[feno[it][0]]
 			if weight + problem.item_weights[item] <= problem.W:
 				weight += problem.item_weights[item]
 				plan[pos] = 1
-
-			it += 1
 
 		return plan
 
@@ -172,17 +168,15 @@ class Problem:
 						+ (cities[i][1] - cities[j][1])**2)
 
 		stdin.readline()
-		itemset = set()
-		all_items = []
+		itemset = []
+		itemcities = []
 		self.bounds = [[0, 0] for _ in range(self.num_cities)]
 
 		for i in range(self.total_items):
 			tmp = stdin.readline().split()
-			all_items.append([(float(tmp[1]), float(tmp[2])), int(tmp[3])])
-			itemset.add((float(tmp[1]), float(tmp[2])))
+			itemcities.append(int(tmp[3]))
+			itemset.append((float(tmp[1]), float(tmp[2])))
 			self.bounds[int(tmp[3])-1][1] += 1
-
-		itemset = list(itemset)
 
 		self.item_weights = [w for (v,w) in itemset]
 		self.item_values = [v for (v,w) in itemset]
@@ -194,8 +188,8 @@ class Problem:
 		self.items = []
 		for i in range(self.num_cities):
 			for j in range(self.total_items):
-				if(all_items[j][1] - 1 == i):
-					self.items.append(itemset.index(all_items[j][0]))
+				if(itemcities[j] - 1 == i):
+					self.items.append(j)
 
 	def __init__(self, args):
 		self._nodes = 0
@@ -205,6 +199,8 @@ class Problem:
 		self.debug = args[0]
 		self.read_conf(args[1])
 
+		if  '--seed' in argv:
+			random.seed(argv[argv.index('--seed')+1])
 		if int(args[2]) == 1:
 			self.read_input1()
 		elif int(args[2]) == 2:

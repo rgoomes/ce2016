@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import cProfile
 
 from sys import *
@@ -112,6 +114,23 @@ def print_status(generation, problem, new_best):
 	stdout.write("\n" if generation == problem.generations else "")
 	stdout.flush()
 
+def print_solution(problem):
+	print("info bestscore " + str(problem.best_score) + ("\n" if '--prof' in argv else ""))
+	if not problem.debug:
+		return
+
+	print('\ntour\tplan')
+	tour, plan = problem.best_cromo[0], problem.best_cromo[1]
+
+	for i in range(problem.num_cities):
+		print(tour[i]+1, end='\t')
+
+		for j in range(problem.bounds[tour[i]][0], problem.bounds[tour[i]][1]):
+			if plan[j] == 1:
+				print(problem.items[j]+1, end=' ')
+
+		print('')
+
 def sea(problem):
 	population = gen_population(problem)
 	eval_population(population, problem)
@@ -126,7 +145,7 @@ def sea(problem):
 
 		print_status(i+1, problem, new_best)
 
-	print("info bestscore " + str(problem.best_score) + ("\n" if '--prof' in argv else ""))
+	print_solution(problem)
 
 def parse_args():
 	if '--help' in argv:
@@ -134,6 +153,7 @@ def parse_args():
 		print('  --help    display this help and exit')
 		print('  --prof    enable profiling')
 		print('  --debug   enable debugging')
+		print('  --seed S  use S as a seed for the random number generator')
 		print('  --conf F  use F as a config file (mandatory)')
 		print('  --type T  use T as the type of the test case (mandatory)')
 		print('            valid test case types are 1 and 2\n')
@@ -142,6 +162,9 @@ def parse_args():
 		print('Try \'ttp --help\' for more information.\n')
 	elif '--type' not in argv or argv.index('--type')+1 == len(argv):
 		print('ttp: missing or invalid option --type')
+		print('Try \'ttp --help\' for more information.\n')
+	elif '--seed' in argv and argv.index('--seed')+1 == len(argv):
+		print('ttp: missing argument in --seed')
 		print('Try \'ttp --help\' for more information.\n')
 	else:
 		return ['--debug' in argv, argv[argv.index('--conf')+1], argv[argv.index('--type')+1]]
