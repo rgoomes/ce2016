@@ -115,7 +115,7 @@ def print_status(generation, problem, new_best):
 	stdout.flush()
 
 def print_solution(problem):
-	print("info bestscore " + str(problem.best_score) + ("\n" if '--prof' in argv else ""))
+	print("info bestscore " + str(problem.best_score))
 	if not problem.debug:
 		return
 
@@ -130,6 +130,8 @@ def print_solution(problem):
 				print(problem.items[j]+1, end=' ')
 
 		print('')
+
+	print("\n" if '--prof' in argv else "")
 
 def sea(problem):
 	population = gen_population(problem)

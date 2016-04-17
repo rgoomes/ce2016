@@ -16,14 +16,16 @@ class Representation:
 			/ problem.item_weights[problem.items[item]]
 
 	def repair(self, problem):
-		feno = [[i, problem.items[i], self.get_ratio(i, problem)]
-			for i in range(problem.total_items) if self.ks[i] == 1]
+		weight = self.get_weight(problem)
+		if weight <= problem.W:
+			return
 
-		feno.sort(key=operator.itemgetter(2))
-		it, weight = 0, self.get_weight(problem)
+		feno = [[i, self.get_ratio(i, problem)] for i in range(problem.total_items) if self.ks[i] == 1]
+		feno.sort(key=operator.itemgetter(1))
+		it = 0
 
 		while(weight > problem.W):
-			pos, item = feno[it][0], feno[it][1]
+			pos, item = feno[it][0],  problem.items[feno[it][0]]
 			weight -= problem.item_weights[item]
 			self.ks[pos] = 0
 			it += 1
@@ -158,7 +160,7 @@ class Problem:
 
 		for i in range(self.num_cities):
 			tmp = stdin.readline().split()
-			cities.append([int(tmp[0]), int(tmp[1])])
+			cities.append([int(tmp[1]), int(tmp[2])])
 
 		self.dists = [[0.0 for _ in range(self.num_cities)] for _ in range(self.num_cities)]
 		for i in range(self.num_cities):
