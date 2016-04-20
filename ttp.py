@@ -9,9 +9,12 @@ from random import *
 def gen_population(problem):
 	return [Representation(problem) for _ in range(problem.population_size)]
 
+def fitness(indiv, problem):
+	return indiv.evaluate(problem)
+
 def eval_population(population, problem):
 	for i in range(problem.population_size):
-		population[i].evaluate(problem)
+		population[i].score = fitness(population[i], problem)
 
 # tournament selection
 def select_parents(population, problem):
@@ -93,10 +96,12 @@ def update_fittest(population, problem):
 	new_best = False
 
 	for i in range(problem.population_size):
+		score = population[i].evaluate(problem)
+
 		if not population[i].isvalid(problem):
 			problem._nodes += 1
-		elif population[i].score > problem.best_score:
-			problem.best_score = population[i].score
+		if score > problem.best_score:
+			problem.best_score = score
 			problem.best_cromo = [population[i].tsp[:], population[i].ks[:]]
 			new_best = True
 

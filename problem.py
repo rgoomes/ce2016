@@ -30,9 +30,6 @@ class Representation:
 			self.ks[pos] = 0
 			it += 1
 
-	def isvalid(self, problem):
-		return self.get_weight(problem) <= problem.W
-
 	def evaluate(self, problem):
 		weight = value = time = 0.0
 
@@ -48,7 +45,10 @@ class Representation:
 			vc = problem.vmax - weight * (problem.vmax - problem.vmin) / problem.W
 			time += problem.dists[city][self.tsp[(i+1) % problem.num_cities]] / vc
 
-		self.score = value - problem.R * time
+		return value - problem.R * time
+
+	def isvalid(self, problem):
+		return self.get_weight(problem) <= problem.W
 
 	def nearest_neighbor(self, problem):
 		tour = [random.randint(0, problem.num_cities - 1)]
@@ -85,6 +85,13 @@ class Representation:
 	def heuristic_indiv(self, problem):
 		self.ks  = self.greedy_knapsack(problem)
 		self.tsp = self.nearest_neighbor(problem)
+
+		score1 = self.evaluate(problem)
+		self.tsp = self.tsp[::-1]
+		score2 = self.evaluate(problem)
+
+		if(score1 > score2):
+			self.tsp = self.tsp[::-1]
 
 	def random_indiv(self, problem):
 		self.ks  = [random.randint(0,1) for _ in range(problem.total_items)]

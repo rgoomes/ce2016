@@ -2,6 +2,6 @@
 generations = 1000
 population_size = 100
 crossover_prob = 0.9
-mutation_prob = 0.01
+mutation_prob = 0.001
 elite_size = 0.1
 tournament_size = 3
