@@ -68,6 +68,37 @@ class Representation:
 
 		return tour
 
+	def greedy_packing_plan(self, problem):
+		true_values = [(0,0,0) for i in range(problem.total_items)]
+		plan = [0 for i in range(problem.total_items)]
+		dists = []
+
+		for k in range(problem.num_cities):
+			cur_dist = 0
+			for i in range(k, problem.num_cities):
+				city = self.tsp[i]
+				cur_dist += problem.dists[city][self.tsp[(i+1) % problem.num_cities]]
+
+			dists.append(cur_dist)
+
+		for i in range(problem.num_cities):
+			city = self.tsp[i]
+
+			for j in range(problem.bounds[city][0], problem.bounds[city][1]):
+				it = problem.items[j]
+				dv = (problem.item_weights[it] / float(problem.W)) * (problem.vmax - problem.vmin)
+				cost_increase = (dists[city] * problem.R / (problem.vmax - dv)) - (dists[city] * problem.R / problem.vmax)
+				true_values[it] = (it, problem.item_values[it] - cost_increase, problem.item_weights[it])
+
+		sorted(true_values, key = lambda x: x[1] / float(x[2]),reverse=True)
+		weight = 0
+		for k in range(len(true_values)):
+			if weight + problem.item_weights[true_values[k][0]] <= problem.W and true_values[k][1] >= 0:
+				weight += problem.item_weights[true_values[k][0]]
+				plan[true_values[k][0]] = 1
+
+		return plan
+
 	def greedy_knapsack(self, problem):
 		plan = [0 for _ in range(problem.total_items)]
 		feno = [[i, self.get_ratio(i, problem)] for i in range(problem.total_items)]
@@ -83,8 +114,9 @@ class Representation:
 		return plan
 
 	def heuristic_indiv(self, problem):
-		self.ks  = self.greedy_knapsack(problem)
+		#self.ks  = self.greedy_knapsack(problem)
 		self.tsp = self.nearest_neighbor(problem)
+		self.ks = self.greedy_packing_plan(problem)
 
 	def random_indiv(self, problem):
 		self.ks  = [random.randint(0,1) for _ in range(problem.total_items)]
