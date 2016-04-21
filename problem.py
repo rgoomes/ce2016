@@ -82,16 +82,35 @@ class Representation:
 
 		return plan
 
+	def shift_heuristic(self, problem):
+		def shift(tour, n):
+			return tour[n:] + tour[:n]
+
+		best_score = self.evaluate(problem)
+
+		for i in range(1, problem.num_cities):
+			self.tsp = shift(self.tsp, i)
+			score = self.evaluate(problem)
+
+			if score < best_score:
+				self.tsp = shift(self.tsp, -i)
+			else:
+				best_score = score
+
+				self.tsp.reverse()
+				score = self.evaluate(problem)
+
+				if score < best_score:
+					self.tsp.reverse()
+				else:
+					best_score = score
+
+		return self.tsp
+
 	def heuristic_indiv(self, problem):
-		self.ks  = self.greedy_knapsack(problem)
 		self.tsp = self.nearest_neighbor(problem)
-
-		score1 = self.evaluate(problem)
-		self.tsp = self.tsp[::-1]
-		score2 = self.evaluate(problem)
-
-		if(score1 > score2):
-			self.tsp = self.tsp[::-1]
+		self.ks  = self.greedy_knapsack(problem)
+		self.tsp = self.shift_heuristic(problem)
 
 	def random_indiv(self, problem):
 		self.ks  = [random.randint(0,1) for _ in range(problem.total_items)]
