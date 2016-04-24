@@ -83,6 +83,9 @@ def apply_variation(parents, problem):
 		apply_mutation(parents[i], problem)
 		parents[i].repair(problem)
 
+	for i in range(problem.population_size):
+		parents[i] = parents[i].local_search(problem)
+
 	return parents
 
 def select_survivors(population, offsprings, problem):

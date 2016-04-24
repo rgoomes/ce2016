@@ -107,6 +107,33 @@ class Representation:
 
 		return self.tsp
 
+	def swap(self, i, j, tour):
+		new_tour = []
+		new_tour += tour[:i]
+		aux = tour[i:j+1]
+		aux.reverse()
+		new_tour += aux
+		new_tour += tour[j+1:]
+		return new_tour
+
+	def two_opt(self, problem):
+		best = self.evaluate(problem)
+
+		for i in range(problem.num_cities):
+			for j in range(i + 1, problem.num_cities):
+				old_tsp = self.tsp
+				self.tsp = self.swap(i, j, self.tsp)
+				eval_ = self.evaluate(problem)
+				if best < eval_:
+					return self.tsp
+				else:
+					self.tsp = old_tsp
+		return self.tsp
+
+	def local_search(self, problem):
+		self.tsp = self.two_opt(problem)
+		return self
+
 	def heuristic_indiv(self, problem):
 		self.tsp = self.nearest_neighbor(problem)
 		self.ks  = self.greedy_knapsack(problem)
