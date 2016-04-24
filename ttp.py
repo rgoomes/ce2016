@@ -74,6 +74,12 @@ def apply_mutation(cromo, problem):
 		pos1, pos2 = sample(range(problem.num_cities), 2)
 		cromo.tsp[pos1], cromo.tsp[pos2] = cromo.tsp[pos2], cromo.tsp[pos1]
 
+def local_search(offsprings, problem):
+	for i in range(problem.population_size):
+		offsprings[i].two_opt(problem)
+
+	return offsprings
+
 def apply_variation(parents, problem):
 	for i in range(0, problem.population_size, 2):
 		two_point(parents[i], parents[i+1], problem)
@@ -82,9 +88,6 @@ def apply_variation(parents, problem):
 	for i in range(problem.population_size):
 		apply_mutation(parents[i], problem)
 		parents[i].repair(problem)
-
-	for i in range(problem.population_size):
-		parents[i] = parents[i].local_search(problem)
 
 	return parents
 
@@ -148,6 +151,7 @@ def sea(problem):
 	for i in range(problem.generations):
 		parents = select_parents(population, problem)
 		offsprings = apply_variation(parents, problem)
+		offsprings = local_search(offsprings, problem)
 
 		eval_population(offsprings, problem)
 		population = select_survivors(population, offsprings, problem)
