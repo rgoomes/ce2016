@@ -42,8 +42,8 @@ class Representation:
 					value += problem.item_values[item]
 					weight += problem.item_weights[item]
 
-			vc = problem.vmax - weight * (problem.vmax - problem.vmin) / problem.W
-			time += problem.dists[city][self.tsp[(i+1) % problem.num_cities]] / vc
+			time += problem.dists[city][self.tsp[(i+1) % problem.num_cities]] \
+				  / (problem.vmax - weight * problem.vratio)
 
 		return value - problem.R * time
 
@@ -171,6 +171,7 @@ class Problem:
 		self.vmax = float(stdin.readline().rstrip())
 		self.vmin = float(stdin.readline().rstrip())
 		self.R = float(stdin.readline().rstrip())
+		self.vratio = (self.vmax - self.vmin) / self.W
 
 		self.dists = []
 		for i in range(self.num_cities):
@@ -207,6 +208,7 @@ class Problem:
 		self.vmin = float(stdin.readline().split('\t')[1])
 		self.vmax = float(stdin.readline().split('\t')[1])
 		self.R = float(stdin.readline().split('\t')[1])
+		self.vratio = (self.vmax - self.vmin) / self.W
 
 		stdin.readline(), stdin.readline()
 		cities = []
