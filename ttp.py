@@ -166,6 +166,7 @@ def send_for_plot(problem):
 	print(' '.join([str(i) for i in problem.bestest]), file=f)
 	print(' '.join([str(i) for i in problem.averages]), file=f)
 
+	f.close()
 	os.system('python plots.py bests.txt')
 	os.system('rm bests.txt')
 

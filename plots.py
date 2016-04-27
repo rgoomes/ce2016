@@ -19,7 +19,7 @@ def plot_bests(data_file):
 	plt.xlabel('Generation')
 	plt.title('Evolution of Fitness over Generations')
 
-	p1 = plt.plot(bests, 'b-o', label = 'Generation Best')
+	p1 = plt.plot(bests, 'b-^', label = 'Generation Best')
 	p2 = plt.plot(bestest, 'r-o', label = 'Best Over All')
 	p3 = plt.plot(avgs, 'g-s', label = 'Generation Average')
 
