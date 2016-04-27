@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-import cProfile
+import cProfile, os
 
 from sys import *
 from problem import *
@@ -42,24 +42,29 @@ def two_point(cromo1, cromo2, problem):
 	cromo1.ks, cromo2.ks = child1, child2
 
 # tsp crossver
-def pmx(cromo1, cromo2, problem):
+def ordered(cromo1, cromo2, problem):
 	if random() < problem.crossover_prob:
 		return
 
 	points = sample(range(problem.num_cities), 2)
 	beg, end = min(points), max(points)
+	last1 = last2 = end
 
-	child1, child2 = cromo1.tsp[:], cromo2.tsp[:]
-	child1[beg:end+1] = cromo2.tsp[beg:end+1]
-	child2[beg:end+1] = cromo1.tsp[beg:end+1]
+	child1 = [-1] * problem.num_cities
+	child2 = [-1] * problem.num_cities
+	child1[beg:end] = cromo1.tsp[beg:end]
+	child2[beg:end] = cromo2.tsp[beg:end]
 
-	for parent, child in zip([cromo1.tsp, cromo2.tsp], [child1, child2]):
-		for i in range(beg, end+1):
-			if parent[i] not in child[beg:end+1]:
-				spot = i
-				while beg <= spot <= end:
-					spot = parent.index(child[spot])
-				child[spot] = parent[i]
+	for i in range(problem.num_cities):
+		pos = (end+i) % problem.num_cities
+		city1, city2 = cromo1.tsp[pos], cromo2.tsp[pos]
+
+		if last1 != beg and city2 not in child1:
+			child1[last1] = city2
+			last1 = (last1+1) % problem.num_cities
+		if last2 != beg and city1 not in child2:
+			child2[last2] = city1
+			last2 = (last2+1) % problem.num_cities
 
 	cromo1.tsp, cromo2.tsp = child1, child2
 
@@ -83,7 +88,7 @@ def local_search(offsprings, problem):
 def apply_variation(parents, problem):
 	for i in range(0, problem.population_size, 2):
 		two_point(parents[i], parents[i+1], problem)
-		pmx(parents[i], parents[i+1], problem)
+		ordered(parents[i], parents[i+1], problem)
 
 	for i in range(problem.population_size):
 		apply_mutation(parents[i], problem)
@@ -101,8 +106,12 @@ def select_survivors(population, offsprings, problem):
 def update_fittest(population, problem):
 	new_best = False
 
+	sum_gen = 0
+	best_gen = -float("inf")
+
 	for i in range(problem.population_size):
 		score = population[i].evaluate(problem)
+		sum_gen += score
 
 		if not population[i].isvalid(problem):
 			problem._nodes += 1
@@ -110,6 +119,12 @@ def update_fittest(population, problem):
 			problem.best_score = score
 			problem.best_cromo = [population[i].tsp[:], population[i].ks[:]]
 			new_best = True
+		if score > best_gen:
+			best_gen = score
+
+	problem.bests.append(best_gen)
+	problem.bestest.append(problem.best_score)
+	problem.averages.append(sum_gen / (problem.population_size * 1.0))
 
 	return new_best
 
@@ -144,6 +159,16 @@ def print_solution(problem):
 
 	print("\n" if '--prof' in argv else "")
 
+def send_for_plot(problem):
+	f = open('bests.txt', 'w+')
+
+	print(' '.join([str(i) for i in problem.bests]), file=f)
+	print(' '.join([str(i) for i in problem.bestest]), file=f)
+	print(' '.join([str(i) for i in problem.averages]), file=f)
+
+	os.system('python plots.py bests.txt')
+	os.system('rm bests.txt')
+
 def sea(problem):
 	population = gen_population(problem)
 	eval_population(population, problem)
@@ -160,6 +185,7 @@ def sea(problem):
 		print_status(i+1, problem, new_best)
 
 	print_solution(problem)
+	send_for_plot(problem)
 
 def parse_args():
 	if '--help' in argv:

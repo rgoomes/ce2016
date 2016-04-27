@@ -113,15 +113,10 @@ class Representation:
 			aux.reverse()
 			return tour[:i] + aux + tour[j+1:]
 
-		used = {}
 		best = self.evaluate(problem)
 
 		for i in range(problem.num_cities):
 			pos = random.sample(range(problem.num_cities), 2)
-			if tuple(pos) in used:
-				continue
-
-			used[tuple(pos)] = True
 
 			old_tsp = self.tsp[:]
 			self.tsp = swap(min(pos), max(pos), self.tsp)
@@ -250,6 +245,10 @@ class Problem:
 
 	def __init__(self, args):
 		self._nodes = 0
+
+		self.bests = []
+		self.bestest = []
+		self.averages = []
 		self.best_cromo = None
 		self.best_score = -float("inf")
 
