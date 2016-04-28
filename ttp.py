@@ -68,7 +68,7 @@ def ordered(cromo1, cromo2, problem):
 
 	cromo1.tsp, cromo2.tsp = child1, child2
 
-def apply_mutation(cromo, problem):
+def apply_mutation(cromo, generation, problem):
 	# knapsack - xor mutation
 	for i in range(problem.total_items):
 		if random() < problem.mutation_prob:
@@ -77,8 +77,8 @@ def apply_mutation(cromo, problem):
 	# tsp - swap mutation
 	for i in range(problem.num_cities):
 		if random() < problem.mutation_prob:
-			pos1, pos2 = sample(range(problem.num_cities), 2)
-			cromo.tsp[pos1], cromo.tsp[pos2] = cromo.tsp[pos2], cromo.tsp[pos1]
+			pos = sample(range(problem.num_cities), 1)[0]
+			cromo.tsp[i], cromo.tsp[pos] = cromo.tsp[pos], cromo.tsp[i]
 
 def local_search(offsprings, problem):
 	for i in range(problem.population_size):
@@ -86,13 +86,31 @@ def local_search(offsprings, problem):
 
 	return offsprings
 
-def apply_variation(parents, problem):
+def update_mutation(generation, problem):
+	if generation <= 100:
+		return
+
+	average = count = 0.0
+	for i in range(generation-1, 0, -1):
+		count += 1.0
+		average += problem.bestest[i]
+
+		if problem.best_score - average/count > 10.0:
+			break
+
+	mutation_formula = problem.normal_mutation_prob + count * 0.03 / generation
+	problem.mutation_prob = min(mutation_formula, problem.hyper_mutation_prob)
+	problem.mutation_prob = max(problem.mutation_prob, problem.normal_mutation_prob)
+
+def apply_variation(parents, generation, problem):
+	update_mutation(generation, problem)
+
 	for i in range(0, problem.population_size, 2):
 		two_point(parents[i], parents[i+1], problem)
 		ordered(parents[i], parents[i+1], problem)
 
 	for i in range(problem.population_size):
-		apply_mutation(parents[i], problem)
+		apply_mutation(parents[i], generation, problem)
 		parents[i].repair(problem)
 
 	return parents
@@ -106,13 +124,11 @@ def select_survivors(population, offsprings, problem):
 
 def update_fittest(population, problem):
 	new_best = False
-
-	sum_gen = 0
-	best_gen = -float("inf")
+	sum_scores = 0
 
 	for i in range(problem.population_size):
 		score = population[i].evaluate(problem)
-		sum_gen += score
+		sum_scores += score
 
 		if not population[i].isvalid(problem):
 			problem._nodes += 1
@@ -120,12 +136,9 @@ def update_fittest(population, problem):
 			problem.best_score = score
 			problem.best_cromo = [population[i].tsp[:], population[i].ks[:]]
 			new_best = True
-		if score > best_gen:
-			best_gen = score
 
-	problem.bests.append(best_gen)
 	problem.bestest.append(problem.best_score)
-	problem.averages.append(sum_gen / (problem.population_size * 1.0))
+	problem.averages.append(sum_scores / (problem.population_size * 1.0))
 
 	return new_best
 
@@ -133,10 +146,11 @@ def print_status(generation, problem, new_best):
 	if not problem.debug:
 		return
 	if generation > 1:
-		stdout.write("\r" if not new_best else "\n")
+		stdout.write("\033[K" + ("\r" if not new_best else "\n"))
 
 	stdout.write("info generation " + str(generation) + " ")
 	stdout.write("bestscore " + str(problem.best_score) + " ")
+	stdout.write("mutation prob " + "{0:.2f}".format(problem.mutation_prob * 100) + "% ")
 	stdout.write("invalid nodes " + str(problem._nodes))
 	stdout.write("\n" if generation == problem.generations else "")
 	stdout.flush()
@@ -161,33 +175,30 @@ def print_solution(problem):
 	print("\n" if '--prof' in argv else "")
 
 def send_for_plot(problem):
-	f = open('bests.txt', 'w+')
+	f = open('bests.txt', 'a+')
 
-	print(' '.join([str(i) for i in problem.bests]), file=f)
 	print(' '.join([str(i) for i in problem.bestest]), file=f)
 	print(' '.join([str(i) for i in problem.averages]), file=f)
 
 	f.close()
-	os.system('python plots.py bests.txt')
-	os.system('rm bests.txt')
 
 def sea(problem):
 	population = gen_population(problem)
 	eval_population(population, problem)
 
-	for i in range(problem.generations):
+	for gen in range(problem.generations):
 		parents = select_parents(population, problem)
-		offsprings = apply_variation(parents, problem)
+		offsprings = apply_variation(parents, gen, problem)
 		offsprings = local_search(offsprings, problem)
 
 		eval_population(offsprings, problem)
 		population = select_survivors(population, offsprings, problem)
 		new_best = update_fittest(population, problem)
 
-		print_status(i+1, problem, new_best)
+		print_status(gen+1, problem, new_best)
 
 	print_solution(problem)
-	#send_for_plot(problem)
+	send_for_plot(problem)
 
 def parse_args():
 	if '--help' in argv:

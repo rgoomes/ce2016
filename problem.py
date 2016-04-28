@@ -155,9 +155,11 @@ class Problem:
 		self.generations = int(parser.get('configs', 'generations'))
 		self.population_size = int(parser.get('configs', 'population_size'))
 		self.crossover_prob = float(parser.get('configs', 'crossover_prob'))
-		self.mutation_prob = float(parser.get('configs', 'mutation_prob'))
+		self.normal_mutation_prob = float(parser.get('configs', 'normal_mutation_prob'))
+		self.hyper_mutation_prob = float(parser.get('configs', 'hyper_mutation_prob'))
 		self.elite_size = float(parser.get('configs', 'elite_size'))
 		self.tournament_size = int(parser.get('configs', 'tournament_size'))
+		self.mutation_prob = self.normal_mutation_prob
 
 	def read_input1(self):
 		self.num_cities = int(stdin.readline().rstrip())
@@ -246,7 +248,6 @@ class Problem:
 	def __init__(self, args):
 		self._nodes = 0
 
-		self.bests = []
 		self.bestest = []
 		self.averages = []
 		self.best_cromo = None
