@@ -75,9 +75,10 @@ def apply_mutation(cromo, problem):
 			cromo.ks[i] ^= 1
 
 	# tsp - swap mutation
-	if random() < problem.mutation_prob:
-		pos1, pos2 = sample(range(problem.num_cities), 2)
-		cromo.tsp[pos1], cromo.tsp[pos2] = cromo.tsp[pos2], cromo.tsp[pos1]
+	for i in range(problem.num_cities):
+		if random() < problem.mutation_prob:
+			pos1, pos2 = sample(range(problem.num_cities), 2)
+			cromo.tsp[pos1], cromo.tsp[pos2] = cromo.tsp[pos2], cromo.tsp[pos1]
 
 def local_search(offsprings, problem):
 	for i in range(problem.population_size):
@@ -186,7 +187,7 @@ def sea(problem):
 		print_status(i+1, problem, new_best)
 
 	print_solution(problem)
-	send_for_plot(problem)
+	#send_for_plot(problem)
 
 def parse_args():
 	if '--help' in argv:
