@@ -75,9 +75,9 @@ def apply_mutation(cromo, generation, problem):
 			cromo.ks[i] ^= 1
 
 	# tsp - swap mutation
-	for i in range(problem.num_cities):
+	for i in range(1, problem.num_cities):
 		if random() < problem.mutation_prob:
-			pos = sample(range(problem.num_cities), 1)[0]
+			pos = sample(range(1, problem.num_cities), 1)[0]
 			cromo.tsp[i], cromo.tsp[pos] = cromo.tsp[pos], cromo.tsp[i]
 
 def local_search(offsprings, problem):

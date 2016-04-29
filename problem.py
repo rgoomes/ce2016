@@ -30,6 +30,11 @@ class Representation:
 			self.ks[pos] = 0
 			it += 1
 
+		for i in range(problem.num_cities):
+			if self.tsp[i] == 0:
+				self.tsp[i], self.tsp[0] = self.tsp[0], self.tsp[i]
+				break
+
 	def evaluate(self, problem):
 		weight = value = time = 0.0
 
@@ -51,11 +56,14 @@ class Representation:
 		return self.get_weight(problem) <= problem.W
 
 	def nearest_neighbor(self, problem):
-		tour = [random.randint(0, problem.num_cities - 1)]
+		tour = [0]
+		tour.append(random.randint(1, problem.num_cities - 1))
+
 		in_tour = [0 for _ in range(problem.num_cities)]
 		in_tour[tour[0]] = 1
+		in_tour[tour[1]] = 1
 
-		for i in range(1, problem.num_cities):
+		for i in range(2, problem.num_cities):
 			dist = float("inf")
 
 			for j in range(problem.num_cities):
@@ -84,24 +92,28 @@ class Representation:
 
 	def shift_heuristic(self, problem):
 		def shift(tour, n):
-			return tour[n:] + tour[:n]
+			tmp = tour[1:]
+			return [tour[0]] + tmp[n:] + tmp[:n]
 
 		best_score = self.evaluate(problem)
 
 		for i in range(1, problem.num_cities):
+			old_tsp = self.tsp[:]
+
 			self.tsp = shift(self.tsp, i)
 			score = self.evaluate(problem)
 
 			if score < best_score:
-				self.tsp = shift(self.tsp, -i)
+				self.tsp = old_tsp
 			else:
 				best_score = score
+				old_tsp = self.tsp[:]
 
-				self.tsp.reverse()
+				self.tsp = [self.tsp[0]] + self.tsp[1:][::-1]
 				score = self.evaluate(problem)
 
 				if score < best_score:
-					self.tsp.reverse()
+					self.tsp = old_tsp
 				else:
 					best_score = score
 
@@ -116,7 +128,7 @@ class Representation:
 		best = self.evaluate(problem)
 
 		for i in range(problem.num_cities):
-			pos = random.sample(range(problem.num_cities), 2)
+			pos = random.sample(range(1, problem.num_cities), 2)
 
 			old_tsp = self.tsp[:]
 			self.tsp = swap(min(pos), max(pos), self.tsp)
@@ -133,11 +145,6 @@ class Representation:
 		self.tsp = self.nearest_neighbor(problem)
 		self.ks  = self.greedy_knapsack(problem)
 		self.tsp = self.shift_heuristic(problem)
-
-	def random_indiv(self, problem):
-		self.ks  = [random.randint(0,1) for _ in range(problem.total_items)]
-		self.tsp = random.sample(range(problem.num_cities), problem.num_cities)
-		self.repair(problem)
 
 	def __init__(self, problem):
 		if problem != None:

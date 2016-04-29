@@ -36,4 +36,3 @@ do
 	pypy ttp.py --conf conf.txt --type 2 < tests/type2/c280_i2790.txt
 done
 python plots.py bests.txt
-
