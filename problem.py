@@ -78,11 +78,11 @@ class Representation:
 
 	def greedy_knapsack(self, problem):
 		plan = [0 for _ in range(problem.total_items)]
-		feno = [[i, self.get_ratio(i, problem)] for i in range(problem.total_items)]
+		feno = [[i, self.get_ratio(i, problem)] for i in range(problem.start_item_pos, problem.total_items)]
 		feno.sort(key=operator.itemgetter(1), reverse=True)
 
 		weight = 0
-		for it in range(0, problem.total_items):
+		for it in range(0, len(feno)):
 			pos, item = feno[it][0], problem.items[feno[it][0]]
 			if weight + problem.item_weights[item] <= problem.W:
 				weight += problem.item_weights[item]
@@ -203,6 +203,8 @@ class Problem:
 					self.bounds[i][1] = total
 					self.items.append(j)
 
+		self.start_item_pos = self.bounds[0][1]
+
 	def read_input2(self):
 		stdin.readline(), stdin.readline()
 
@@ -245,6 +247,8 @@ class Problem:
 		for i in range(1, self.num_cities):
 			self.bounds[i][0] = self.bounds[i-1][1]
 			self.bounds[i][1] += self.bounds[i-1][1]
+
+		self.start_item_pos = self.bounds[0][1]
 
 		self.items = []
 		for i in range(self.num_cities):

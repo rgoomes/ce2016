@@ -34,7 +34,7 @@ def two_point(cromo1, cromo2, problem):
 	if random() < problem.crossover_prob:
 		return
 
-	points = sample(range(problem.total_items), 2)
+	points = sample(range(problem.start_item_pos, problem.total_items), 2)
 	pos1, pos2 = min(points), max(points)
 
 	child1 = cromo1.ks[:pos1] + cromo2.ks[pos1:pos2] + cromo1.ks[pos2:]
@@ -70,7 +70,7 @@ def ordered(cromo1, cromo2, problem):
 
 def apply_mutation(cromo, generation, problem):
 	# knapsack - xor mutation
-	for i in range(problem.total_items):
+	for i in range(problem.start_item_pos, problem.total_items):
 		if random() < problem.mutation_prob:
 			cromo.ks[i] ^= 1
 
