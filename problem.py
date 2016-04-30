@@ -16,6 +16,11 @@ class Representation:
 			/ problem.item_weights[problem.items[item]]
 
 	def repair(self, problem):
+		for i in range(problem.num_cities):
+			if self.tsp[i] == 0:
+				self.tsp[i], self.tsp[0] = self.tsp[0], self.tsp[i]
+				break
+
 		weight = self.get_weight(problem)
 		if weight <= problem.W:
 			return
@@ -29,11 +34,6 @@ class Representation:
 			weight -= problem.item_weights[item]
 			self.ks[pos] = 0
 			it += 1
-
-		for i in range(problem.num_cities):
-			if self.tsp[i] == 0:
-				self.tsp[i], self.tsp[0] = self.tsp[0], self.tsp[i]
-				break
 
 	def evaluate(self, problem):
 		weight = value = time = 0.0
